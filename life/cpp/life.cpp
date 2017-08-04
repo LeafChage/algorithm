@@ -7,7 +7,7 @@ using namespace std;
 const int COUNT = 20;
 const char LIVE = 'o';
 const char DEATH = '_';
-const int pioneer = 100;
+const int PIONEER = 100;
 
 random_device rnd;     // 非決定的な乱数生成器を生成
 mt19937 mt(rnd());     //  メルセンヌ・ツイスタの32ビット版、引数は初期シード値
@@ -32,18 +32,18 @@ class Field {
                  int result = 0;
                  if(over0(x-1) && over0(y-1) && is_exists(x-1, y-1)) result++;
                  if(over0(y-1) && is_exists(x, y-1)) result++;
-                 if(underCount(x+1) && over0(y-1) && is_exists(x+1, y-1)) result++;
+                 if(under_count(x+1) && over0(y-1) && is_exists(x+1, y-1)) result++;
                  if(over0(x-1) && is_exists(x-1, y)) result++;
-                 if(underCount(x+1) && is_exists(x+1, y)) result++;
-                 if(over0(x-1) && underCount(y+1) && is_exists(x-1, y+1)) result++;
-                 if(underCount(y+1) && is_exists(x, y+1)) result++;
-                 if(underCount(x+1) && underCount(y+1) && is_exists(x+1, y+1)) result++;
+                 if(under_count(x+1) && is_exists(x+1, y)) result++;
+                 if(over0(x-1) && under_count(y+1) && is_exists(x-1, y+1)) result++;
+                 if(under_count(y+1) && is_exists(x, y+1)) result++;
+                 if(under_count(x+1) && under_count(y+1) && is_exists(x+1, y+1)) result++;
                  return result;
            }
            bool over0(int num){
                  return ( num >= 0);
            }
-           bool underCount(int num){
+           bool under_count(int num){
                  return (num < COUNT);
            }
 
@@ -63,7 +63,7 @@ Field::Field(){
 }
 
 void Field::random_birthday(){
-      for(int i = 0; i < pioneer; i++){
+      for(int i = 0; i < PIONEER; i++){
             cells[rand_0_to_count(mt)][rand_0_to_count(mt)] = LIVE;
       }
 }
