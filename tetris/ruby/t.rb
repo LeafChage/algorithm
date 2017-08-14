@@ -1,3 +1,4 @@
+require 'io/console'
 #途中
 
 BLOCKS = [
@@ -146,8 +147,8 @@ class Current
             @current.each do |line|
                   p line
             end
-            puts @x
-            puts @y
+            # puts @x
+            # puts @y
             puts ""
       end
 
@@ -162,10 +163,33 @@ def main()
       current = Current.new(5, 0)
       current.write()
 
+      cmd = 'n'
+      thread = Thread::start do
+            cmd = STDIN.getch
+      end
       500.times do
-            tmp = current.fall
+            if !thread.alive?
+                  thread = Thread::start do
+                        cmd = STDIN.getch
+                  end
+            end
+            sleep(0.3)
+            case cmd
+            when 'n'
+                  tmp = current.fall
+            when 'f' then
+                  tmp = current.left
+                  cmd = 'n'
+            when 'j' then
+                  tmp = current.right
+                  cmd = 'n'
+            when ' ' then
+                  tmp = current.rotation
+                  cmd = 'n'
+            end
+            p cmd
             next_pos = tmp.move_position
-            p next_pos
+            # p next_pos
             if !field.are_block?(next_pos)
                   field.pre_fix(next_pos)
                   current = tmp
@@ -176,7 +200,9 @@ def main()
             field.write
             current.write
             field.clear
-            sleep(0.3)
+            if thread.alive?
+                  Thread.kill(thread)
+            end
       end
 end
 
