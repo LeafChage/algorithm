@@ -27,9 +27,18 @@ class Field
       HEIGHT = 20
       WALL = 1
       NONE = 0
+      ACTIVE = 2
 
       def initialize()
             @field = init_field
+      end
+
+      def clear()
+            @field.each_with_index do |line, y|
+                  line.each_with_index do |l, x|
+                       @field[y][x] = 0 if l == ACTIVE
+                  end
+            end
       end
 
       def are_block?(next_pos)
@@ -39,19 +48,27 @@ class Field
                         result = true
                   end
             end
-
             result
       end
 
       def fix(now_pos)
             now_pos.each do |pos|
-                  @field[pos[0]][pos[1]] = 1
+                  @field[pos[1]][pos[0]] = WALL
+            end
+      end
+
+      def pre_fix(now_pos)
+            now_pos.each do |pos|
+                  @field[pos[1]][pos[0]] = ACTIVE
             end
       end
 
       def write()
             @field.each do |line|
-                  p line
+                  line.each do |l|
+                        print (l == 0) ? "_ " : "0 "
+                  end
+                  print "\n"
             end
             puts ""
       end
@@ -92,6 +109,7 @@ class Current
                         end
                   end
             end
+            block_position
       end
 
       def right()
@@ -128,6 +146,8 @@ class Current
             @current.each do |line|
                   p line
             end
+            puts @x
+            puts @y
             puts ""
       end
 
@@ -145,13 +165,18 @@ def main()
       500.times do
             tmp = current.fall
             next_pos = tmp.move_position
+            p next_pos
             if !field.are_block?(next_pos)
+                  field.pre_fix(next_pos)
                   current = tmp
             else
                   field.fix(current.move_position)
                   current = Current.new(5, 0)
             end
             field.write
+            current.write
+            field.clear
+            sleep(0.3)
       end
 end
 
