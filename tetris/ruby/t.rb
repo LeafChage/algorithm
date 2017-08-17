@@ -30,6 +30,7 @@ class Field
       FIX = 3
       ACTIVE = 2
       FINISH_COUNT = 40
+      attr_reader :point
 
       def initialize()
             @field = init_field
@@ -194,6 +195,7 @@ end
 
 def main()
       display_clear()
+
       field = Field.new()
       field.write()
 
@@ -208,10 +210,11 @@ def main()
                   end
             end
       end
-      500.times do
+      loop do
             sleep(0.2)
             display_clear()
-            p cmd
+            puts "left: f, right: j, rotate: space\e[25D"
+            puts "\e[25D#{field.point}\e[25D"
             case cmd
             when 'f' then
                   tmp = current.left
@@ -232,12 +235,20 @@ def main()
             else
                   field.fix(current.move_position)
                   current = Current.new(5, 0)
+                  next_pos = current.move_position
+                  if field.are_block?(next_pos)
+                        puts "game over"
+                        break
+                  end
             end
             field.write
             field.clear
             field.line_clear
             cmd = 'n'
-            break if field.game_finish?()
+            if field.game_finish?()
+                  puts "success!!!!!!"
+                  break
+            end
       end
       Thread.kill(thread)
 end
