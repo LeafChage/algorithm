@@ -1,5 +1,4 @@
 require 'io/console'
-#途中
 
 BLOCKS = [
       [ [0, 1, 0],
@@ -28,18 +27,34 @@ class Field
       HEIGHT = 20
       WALL = 1
       NONE = 0
+      FIX = 3
       ACTIVE = 2
+      FINISH_COUNT = 40
 
       def initialize()
             @field = init_field
+            @point  = 0
       end
-
       def clear()
             @field.each_with_index do |line, y|
                   line.each_with_index do |l, x|
                        @field[y][x] = 0 if l == ACTIVE
                   end
             end
+      end
+
+      def line_clear()
+            @field.each_with_index do |line, y|
+                  if line == [WALL, FIX, FIX, FIX, FIX, FIX, FIX, FIX, FIX, FIX, WALL]
+                        @point += 1
+                        @field.delete_at(y)
+                        @field.insert(0, [WALL, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, WALL])
+                  end
+            end
+      end
+
+      def game_finish?()
+            @point >= 40
       end
 
       def are_block?(next_pos)
@@ -54,7 +69,7 @@ class Field
 
       def fix(now_pos)
             now_pos.each do |pos|
-                  @field[pos[1]][pos[0]] = WALL
+                  @field[pos[1]][pos[0]] = FIX
             end
       end
 
@@ -65,18 +80,25 @@ class Field
       end
 
       def write()
+            text = "\n\e[25D"
             @field.each do |line|
                   line.each do |l|
-                        print (l == 0) ? "_ " : "0 "
+                        if l == NONE
+                              text += "_ "
+                        elsif l == ACTIVE || l == FIX
+                              text += "o "
+                        else
+                              text += "# "
+                        end
                   end
-                  print "\n"
+                  text += "\n\e[25D"
             end
-            puts ""
+            puts text
       end
 
       private
       def is_block?(x, y)
-            @field[y][x] == WALL
+            @field[y][x] == WALL || @field[y][x] == FIX
       end
 
       def init_field
@@ -126,6 +148,17 @@ class Current
       end
 
       def rotation()
+            tmp = Array.new(4){ Array.new(4, 0)}
+            #転置させて、行の順番をひっくりかえす
+            @current.each_with_index do |line, y|
+                  line.each_with_index do |l, x|
+                        tmp[x][y] = l
+                  end
+            end
+            tmp.each_with_index do |line, i|
+                  tmp[i] = line.reverse
+            end
+            Current.new(@x, @y, tmp)
       end
 
       def new_block()
@@ -155,8 +188,12 @@ class Current
       private
 end
 
+def display_clear()
+      print "\x1b[2J\x1b[0;0H"
+end
 
 def main()
+      display_clear()
       field = Field.new()
       field.write()
 
@@ -165,45 +202,44 @@ def main()
 
       cmd = 'n'
       thread = Thread::start do
-            cmd = STDIN.getch
-      end
-      500.times do
-            if !thread.alive?
-                  thread = Thread::start do
-                        cmd = STDIN.getch
+            while (cmd = STDIN.getch)
+                  if cmd ==  "\C-c"
+                        break
                   end
             end
-            sleep(0.3)
+      end
+      500.times do
+            sleep(0.2)
+            display_clear()
+            p cmd
             case cmd
-            when 'n'
-                  tmp = current.fall
             when 'f' then
                   tmp = current.left
-                  cmd = 'n'
             when 'j' then
                   tmp = current.right
-                  cmd = 'n'
             when ' ' then
                   tmp = current.rotation
-                  cmd = 'n'
+            else
+                  tmp = current.fall
             end
-            p cmd
             next_pos = tmp.move_position
             # p next_pos
             if !field.are_block?(next_pos)
                   field.pre_fix(next_pos)
                   current = tmp
+            elsif cmd != 'n'
+                  current = current
             else
                   field.fix(current.move_position)
                   current = Current.new(5, 0)
             end
             field.write
-            current.write
             field.clear
-            if thread.alive?
-                  Thread.kill(thread)
-            end
+            field.line_clear
+            cmd = 'n'
+            break if field.game_finish?()
       end
+      Thread.kill(thread)
 end
 
 main()
