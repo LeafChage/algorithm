@@ -30,6 +30,9 @@ class Field
       FIX = 3
       ACTIVE = 2
       FINISH_COUNT = 40
+      WALL_CHAR = "□ "
+      BLOCK_CHAR = "■ "
+      NONE_CHAR = "  "
       attr_reader :point
 
       def initialize()
@@ -85,11 +88,11 @@ class Field
             @field.each do |line|
                   line.each do |l|
                         if l == NONE
-                              text += "_ "
+                              text += NONE_CHAR
                         elsif l == ACTIVE || l == FIX
-                              text += "o "
+                              text += BLOCK_CHAR
                         else
-                              text += "# "
+                              text += WALL_CHAR
                         end
                   end
                   text += "\n\e[25D"
