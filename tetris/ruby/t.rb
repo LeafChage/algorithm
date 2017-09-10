@@ -196,6 +196,18 @@ def display_clear()
       print "\x1b[2J\x1b[0;0H"
 end
 
+def fall_to_block(current, field)
+      result = current
+      loop do
+            next_pos = result.fall.move_position
+            if field.are_block?(next_pos)
+                  return result
+            else
+                  result = result.fall
+            end
+      end
+end
+
 def main()
       display_clear()
 
@@ -223,6 +235,8 @@ def main()
                   tmp = current.left
             when 'j' then
                   tmp = current.right
+            when 'b' then
+                  tmp = fall_to_block(current, field)
             when ' ' then
                   tmp = current.rotation
             else
