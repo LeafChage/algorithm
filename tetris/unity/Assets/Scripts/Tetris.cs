@@ -53,7 +53,11 @@ public class Tetris : MonoBehaviour {
         {
             Debug.Log(field.GetPoint());
         }
-        inputButton(ref tmp);
+        if(Application.isEditor){
+            inputButton(ref tmp);
+        }else{
+            inputTouch(ref tmp);
+        }
         updateUi();
 
         wait_time++;
@@ -113,19 +117,19 @@ public class Tetris : MonoBehaviour {
     //入力をとって動作まで
     private void inputButton(ref CurrentBlock tmp)
     {
-        if (Input.GetKeyDown(KeyCode.RightArrow) || Input.acceleration.x > 0.3)
+        if (Input.GetKeyDown(KeyCode.RightArrow))
         {
             Debug.Log("right");
             tmp = current.MoveRight();
             button_on = true;
         }
-        else if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.acceleration.x < -0.3)
+        else if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
             Debug.Log("left");
             tmp = current.MoveLeft();
             button_on = true;
         }
-        else if (Input.GetKeyDown(KeyCode.Space) || isTouch())
+        else if (Input.GetKeyDown(KeyCode.Space))
         {
             Debug.Log("rotate");
             tmp = current.Rotate();
@@ -133,7 +137,7 @@ public class Tetris : MonoBehaviour {
 
             transform.Rotate(new Vector3(0f, 0f, 90f));
         }
-        else if (Input.GetKeyDown(KeyCode.DownArrow) || Input.acceleration.y < - 0.5)
+        else if (Input.GetKeyDown(KeyCode.DownArrow))
         {
             Debug.Log("under");
             moveUnder(ref tmp);
@@ -141,19 +145,56 @@ public class Tetris : MonoBehaviour {
         }
     }
 
-    private bool isTouch()
+    private void inputTouch(ref CurrentBlock tmp){
+        Vector2 pos = touchPoint();
+        if (pos == Vector2.zero)
+        {
+            return;
+        }
+        else if (pos.y > Screen.height * 0.2f)
+        {
+            if (pos.x > Screen.width * 0.8f)
+            {
+                Debug.Log("right");
+                tmp = current.MoveRight();
+                button_on = true;
+            }
+            else if (pos.x < Screen.width * 0.2f)
+            {
+                Debug.Log("left");
+                tmp = current.MoveLeft();
+                button_on = true;
+            }
+            else
+            {
+                Debug.Log("rotate");
+                tmp = current.Rotate();
+                button_on = true;
+
+                transform.Rotate(new Vector3(0f, 0f, 90f));
+            }
+        }
+        else
+        {
+            Debug.Log("under");
+            moveUnder(ref tmp);
+            button_on = true;
+        }
+    }
+    private Vector2 touchPoint()
     {
         if (Input.touchCount > 0)
         {
             Touch touch = Input.GetTouch(0);
             if (touch.phase == TouchPhase.Began)
             {
-                return true;
+                return touch.position;
             }
 
         }
-        return false;
+        return Vector2.zero;
     }
+
 
     private void moveUnder(ref CurrentBlock tmp)
     {
