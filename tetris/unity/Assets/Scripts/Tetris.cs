@@ -4,14 +4,9 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class Tetris : MonoBehaviour {
-    [SerializeField]
-    private GameObject default_object;
-
-    [SerializeField]
-    private GameObject ending_obj;
-
-    [SerializeField]
-    private Text text;
+    [SerializeField] private GameObject default_object;
+    [SerializeField] private GameObject ending_obj;
+    [SerializeField] private Text text;
 
     private Field field;
     private GameObject[][] field_blocks;
@@ -47,17 +42,20 @@ public class Tetris : MonoBehaviour {
 
     void Update () {
         time += Time.deltaTime;
+        if(time < 3){
+            return;
+        }
 
         if (finish) return;
         if (Input.GetKeyDown(KeyCode.P))
         {
             Debug.Log(field.GetPoint());
         }
-        if(Application.isEditor){
-            inputButton(ref tmp);
-        }else{
-            inputTouch(ref tmp);
-        }
+        // if(Application.isEditor){
+        //     inputButton(ref tmp);
+        // }else{
+        inputTouch(ref tmp);
+        // }
         updateUi();
 
         wait_time++;
@@ -144,7 +142,6 @@ public class Tetris : MonoBehaviour {
             button_on = true;
         }
     }
-
     private void inputTouch(ref CurrentBlock tmp){
         Vector2 pos = touchPoint();
         if (pos == Vector2.zero)
@@ -183,6 +180,13 @@ public class Tetris : MonoBehaviour {
     }
     private Vector2 touchPoint()
     {
+        #if UNITY_EDITOR
+        if(Input.GetMouseButtonDown(0)){
+            return Input.mousePosition;
+        }else{
+        return Vector2.zero;
+        }
+        #else
         if (Input.touchCount > 0)
         {
             Touch touch = Input.GetTouch(0);
@@ -193,6 +197,7 @@ public class Tetris : MonoBehaviour {
 
         }
         return Vector2.zero;
+        #endif
     }
 
 
