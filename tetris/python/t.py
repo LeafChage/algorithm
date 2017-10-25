@@ -146,7 +146,7 @@ class InputThread(threading.Thread):
 
 
 def displayClear():
-    print("\x1b[2J\x1b[0;0H" , end = "")
+    print("\x1b[2J\x1b[0;0H" , end="")
 
 def main():
     displayClear()
